@@ -58,6 +58,16 @@ export const CashierView: React.FC = () => {
 
   // Add menu variant to cart
   const handleAddToCart = (menu: Menu, variant: MenuVariant) => {
+    // Business Rule 3: Menu Out wajib menggunakan recipe aktif
+    const hasActiveRecipe = recipes.some(
+      (r) => r.variant_id === variant.id && r.active && r.ingredients.length > 0
+    );
+
+    if (!hasActiveRecipe) {
+      alert(`Menu "${menu.name} (${variant.name})" belum memiliki resep aktif (BOM belum lengkap). Tidak dapat ditambahkan ke transaksi.`);
+      return;
+    }
+
     setOrderItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) => item.menu_id === menu.id && item.variant_id === variant.id
@@ -200,18 +210,35 @@ export const CashierView: React.FC = () => {
 
                   {/* Variants List / Buttons */}
                   <div className="mt-3 space-y-1.5">
-                    {menu.variants.map((variant) => (
-                      <button
-                        key={variant.id}
-                        onClick={() => handleAddToCart(menu, variant)}
-                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-mira-canvas hover:bg-mira-caramel hover:text-white border border-mira-border text-xs font-medium text-mira-dark transition-colors group/btn"
-                      >
-                        <span className="font-sans">{variant.name}</span>
-                        <span className="font-mono font-semibold">
-                          {formatRupiah(variant.selling_price)}
-                        </span>
-                      </button>
-                    ))}
+                    {menu.variants.map((variant) => {
+                      const hasRecipe = recipes.some(
+                        (r) => r.variant_id === variant.id && r.active && r.ingredients.length > 0
+                      );
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => handleAddToCart(menu, variant)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors group/btn ${
+                            hasRecipe
+                              ? 'bg-mira-canvas hover:bg-mira-caramel hover:text-white border-mira-border text-mira-dark'
+                              : 'bg-mira-subtle/50 text-mira-muted border-mira-border cursor-not-allowed opacity-75'
+                          }`}
+                          title={hasRecipe ? 'Tambah ke pesanan' : 'Resep belum lengkap (BOM Incomplete)'}
+                        >
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-sans">{variant.name}</span>
+                            {!hasRecipe && (
+                              <span className="text-[10px] text-mira-amber font-mono font-normal">
+                                [Resep Belum Ada]
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-mono font-semibold">
+                            {formatRupiah(variant.selling_price)}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

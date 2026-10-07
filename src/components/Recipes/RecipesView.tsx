@@ -123,6 +123,19 @@ export const RecipesView: React.FC = () => {
   const handleSaveRecipe = async () => {
     if (!selectedMenu || !selectedVariant) return;
 
+    // PRD Business Rule 4: Recipe harus memiliki minimal satu ingredient
+    if (recipeDraft.length === 0) {
+      alert('Resep harus memiliki minimal satu bahan baku (ingredient)!');
+      return;
+    }
+
+    // PRD Business Rule 5: Quantity ingredient harus lebih besar dari 0
+    const hasZeroOrNegativeQty = recipeDraft.some((item) => item.quantity <= 0);
+    if (hasZeroOrNegativeQty) {
+      alert('Kuantitas setiap bahan baku di dalam resep harus lebih besar dari 0!');
+      return;
+    }
+
     const totalCost = recipeDraft.reduce((sum, item) => sum + item.calculated_cost, 0);
     const recipeId = activeRecipe ? activeRecipe.id : `REC-${selectedVariant.id}`;
     const nextVersion = activeRecipe ? activeRecipe.version + 1 : 1;
