@@ -39,7 +39,8 @@ export const CashierView: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('cash');
   const [cashAmount, setCashAmount] = useState<string>('');
-  const [activeNoteItemId, setActiveNoteItemId] = useState<string | null>(null);
+  const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null);
+  const [noteDraftText, setNoteDraftText] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successReceipt, setSuccessReceipt] = useState<{
     id: string;
@@ -189,24 +190,34 @@ export const CashierView: React.FC = () => {
                 key={menu.id}
                 className="bg-mira-card border border-mira-border rounded-2xl overflow-hidden shadow-tactile flex flex-col justify-between hover:border-mira-sand transition-all group"
               >
-                <div className="relative aspect-square w-full bg-mira-subtle overflow-hidden">
-                  <img
-                    src={menu.image_url}
-                    alt={menu.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute top-2 left-2 bg-mira-dark/80 backdrop-blur-sm text-white text-[10px] font-mono px-2 py-0.5 rounded-md uppercase">
-                    {menu.category}
+                <div
+                  onClick={() => {
+                    const defaultVar = menu.variants.find((v) => v.is_default) || menu.variants[0];
+                    if (defaultVar) handleAddToCart(menu, defaultVar);
+                  }}
+                  className="cursor-pointer"
+                  title="Klik untuk tambah varian utama"
+                >
+                  <div className="relative aspect-square w-full bg-mira-subtle overflow-hidden">
+                    <img
+                      src={menu.image_url}
+                      alt={menu.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2 left-2 bg-mira-dark/80 backdrop-blur-sm text-white text-[10px] font-mono px-2 py-0.5 rounded-md uppercase">
+                      {menu.category}
+                    </div>
                   </div>
-                </div>
 
-                <div className="p-3.5 flex flex-col justify-between flex-1">
-                  <div>
-                    <h3 className="font-display font-bold text-sm text-mira-dark line-clamp-1">
+                  <div className="p-3.5 pb-0">
+                    <h3 className="font-display font-bold text-sm text-mira-dark line-clamp-1 group-hover:text-mira-caramel transition-colors">
                       {menu.name}
                     </h3>
                   </div>
+                </div>
+
+                <div className="p-3.5 pt-0 flex flex-col justify-between flex-1">
 
                   {/* Variants List / Buttons */}
                   <div className="mt-3 space-y-1.5">
@@ -248,7 +259,7 @@ export const CashierView: React.FC = () => {
       </div>
 
       {/* RIGHT SECTION: Cart & Order Tray (Tablet Oriented) */}
-      <div className="w-full lg:w-96 bg-mira-card flex flex-col justify-between shrink-0 h-auto lg:h-full border-t lg:border-t-0">
+      <div className="w-full lg:w-96 bg-mira-card flex flex-col justify-between shrink-0 h-[480px] lg:h-full border-t lg:border-t-0 shadow-sm">
         {/* Tray Header */}
         <div className="p-4 border-b border-mira-border flex items-center justify-between bg-mira-card-muted/50">
           <div>
@@ -330,16 +341,10 @@ export const CashierView: React.FC = () => {
                 <div className="flex items-center justify-between pt-1">
                   <button
                     onClick={() => {
-                      const note = prompt('Catatan untuk barista (cth: Less Sugar, No Ice):', item.notes || '');
-                      if (note !== null) {
-                        setOrderItems((prev) => {
-                          const updated = [...prev];
-                          updated[index] = { ...updated[index], notes: note };
-                          return updated;
-                        });
-                      }
+                      setEditingNoteIndex(index);
+                      setNoteDraftText(item.notes || '');
                     }}
-                    className="text-[11px] text-mira-muted hover:text-mira-caramel underline"
+                    className="text-[11px] text-mira-muted hover:text-mira-caramel underline text-left"
                   >
                     {item.notes ? 'Ubah Catatan' : '+ Catatan Barista'}
                   </button>
@@ -607,6 +612,82 @@ export const CashierView: React.FC = () => {
               >
                 {isSubmitting ? 'Memproses BOM...' : 'Konfirmasi Transaksi & Potong Stok'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BARISTA NOTE MODAL */}
+      {editingNoteIndex !== null && orderItems[editingNoteIndex] && (
+        <div className="fixed inset-0 z-50 bg-mira-dark/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-mira-card border border-mira-border rounded-2xl max-w-sm w-full p-5 shadow-elevated animate-scale-in">
+            <div className="flex items-center justify-between pb-2 border-b border-mira-border">
+              <h3 className="font-display font-bold text-sm text-mira-dark">
+                Catatan untuk Barista
+              </h3>
+              <button
+                onClick={() => setEditingNoteIndex(null)}
+                className="text-mira-muted hover:text-mira-dark text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-3 space-y-3">
+              <p className="text-xs text-mira-muted">
+                {orderItems[editingNoteIndex].menu_name} ({orderItems[editingNoteIndex].variant_name})
+              </p>
+
+              <textarea
+                value={noteDraftText}
+                onChange={(e) => setNoteDraftText(e.target.value)}
+                placeholder="Contoh: Less Sugar, No Ice, Extra Shot..."
+                rows={3}
+                className="w-full p-2.5 rounded-xl bg-mira-canvas border border-mira-border text-xs focus:outline-none focus:border-mira-caramel resize-none"
+              />
+
+              {/* Quick Preset Modifier Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {['Less Sugar', 'No Sugar', 'Normal Ice', 'Less Ice', 'No Ice', 'Extra Hot', 'Bawa Pulang'].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => {
+                      setNoteDraftText((prev) => (prev ? `${prev}, ${chip}` : chip));
+                    }}
+                    className="px-2 py-1 rounded-md bg-mira-subtle text-mira-dark border border-mira-border text-[11px] hover:bg-mira-sand transition-colors"
+                  >
+                    +{chip}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-mira-border">
+                <button
+                  type="button"
+                  onClick={() => setEditingNoteIndex(null)}
+                  className="px-3 py-1.5 rounded-lg border border-mira-border text-xs text-mira-muted hover:bg-mira-subtle"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOrderItems((prev) => {
+                      const updated = [...prev];
+                      updated[editingNoteIndex] = {
+                        ...updated[editingNoteIndex],
+                        notes: noteDraftText.trim(),
+                      };
+                      return updated;
+                    });
+                    setEditingNoteIndex(null);
+                  }}
+                  className="px-4 py-1.5 rounded-lg bg-mira-caramel hover:bg-mira-caramel-hover text-white text-xs font-bold"
+                >
+                  Simpan Catatan
+                </button>
+              </div>
             </div>
           </div>
         </div>
