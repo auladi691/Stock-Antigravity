@@ -22,7 +22,7 @@ const MainContent: React.FC = () => {
   const currentTab = isCashier && !allowedForCashier.includes(activeTab) ? 'pos' : activeTab;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-mira-canvas">
+    <main className="flex-1 h-full overflow-y-auto bg-mira-canvas">
       {currentTab === 'pos' && <CashierView />}
       {currentTab === 'dashboard' && <DashboardView />}
       {currentTab === 'inventory' && <IngredientsView />}
@@ -40,9 +40,9 @@ const MainContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <AppProvider>
-      <div className="min-h-screen bg-mira-canvas flex flex-col font-sans text-mira-dark">
+      <div className="h-screen w-screen overflow-hidden bg-mira-canvas flex flex-col font-sans text-mira-dark">
         <Navbar />
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden w-full relative">
           <Sidebar />
           <MainContent />
         </div>

@@ -159,7 +159,7 @@ export const CashierView: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden bg-mira-canvas">
+    <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-mira-canvas">
       {/* LEFT SECTION: Menu Catalog & Categories */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-mira-border">
         {/* Category Pills Bar */}

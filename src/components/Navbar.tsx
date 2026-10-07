@@ -4,8 +4,7 @@ import {
   Wifi,
   WifiOff,
   AlertTriangle,
-  UserCheck,
-  Coffee,
+  PanelLeft,
 } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -17,6 +16,8 @@ export const Navbar: React.FC = () => {
     isOnline,
     ingredients,
     setActiveTab,
+    isSidebarCollapsed,
+    toggleSidebar,
   } = useApp();
 
   // Count low stock items
@@ -25,11 +26,19 @@ export const Navbar: React.FC = () => {
   ).length;
 
   return (
-    <header className="bg-mira-card border-b border-mira-border sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logotype & Outlet */}
+    <header className="h-16 shrink-0 w-full bg-mira-card border-b border-mira-border z-30">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+        {/* Brand Logotype, Toggle Button & Outlet */}
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-mira-dark text-mira-canvas flex items-center justify-center font-display font-extrabold text-lg tracking-wider shadow-sm">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-xl text-mira-dark hover:bg-mira-subtle border border-mira-border/80 transition-colors focus:outline-none"
+            title={isSidebarCollapsed ? 'Perluas Menu (Expand)' : 'Kecilkan Menu (Minimize)'}
+          >
+            <PanelLeft className="w-4 h-4 text-mira-dark" />
+          </button>
+
+          <div className="w-10 h-10 rounded-xl bg-mira-dark text-mira-canvas flex items-center justify-center font-display font-extrabold text-lg tracking-wider shadow-sm shrink-0">
             M
           </div>
           <div>
@@ -53,7 +62,7 @@ export const Navbar: React.FC = () => {
           {lowStockCount > 0 && (
             <button
               onClick={() => setActiveTab('inventory')}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-mira-amber-light text-mira-amber border border-mira-amber/30 text-xs font-medium hover:bg-mira-amber/20 transition-colors"
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-mira-amber-light text-mira-amber border border-mira-amber/30 text-xs font-medium hover:bg-mira-amber/20 transition-colors focus:outline-none"
               title={`${lowStockCount} bahan di bawah stok minimum`}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
@@ -99,7 +108,7 @@ export const Navbar: React.FC = () => {
                 <button
                   key={r}
                   onClick={() => setUserRole(r)}
-                  className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                  className={`px-2.5 py-1 rounded-md font-medium transition-all focus:outline-none ${
                     isActive
                       ? 'bg-mira-dark text-white shadow-sm'
                       : 'text-mira-muted hover:text-mira-dark hover:bg-white/60'

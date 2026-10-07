@@ -35,8 +35,10 @@ interface AppContextType {
   userRole: UserRole;
   isOnline: boolean;
   activeTab: string;
+  isSidebarCollapsed: boolean;
   setActiveTab: (tab: string) => void;
   setUserRole: (role: UserRole) => void;
+  toggleSidebar: () => void;
   updateBrandSetting: (setting: BrandSetting) => Promise<void>;
   addIngredient: (ing: Omit<Ingredient, 'id' | 'updated_at'>) => Promise<void>;
   updateIngredient: (id: string, ing: Partial<Ingredient>) => Promise<void>;
@@ -87,6 +89,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [userRole, setUserRole] = useState<UserRole>('owner');
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [activeTab, setActiveTab] = useState<string>('pos');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('mira_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('mira_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Track online/offline status
   useEffect(() => {
@@ -546,8 +565,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         userRole,
         isOnline,
         activeTab,
+        isSidebarCollapsed,
         setActiveTab,
         setUserRole,
+        toggleSidebar,
         updateBrandSetting,
         addIngredient,
         updateIngredient,
